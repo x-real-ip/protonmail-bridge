@@ -2,13 +2,11 @@
 
 set -ex
 
-# constants
 BRIDGE="protonmail-bridge --cli"
-GPG_PARAMS="/home/gpg-key-parameters"
+BRIDGE_EXTRA_ARGS="--log-level info"
+GPG_PARAMS="/protonmail/gpg-key-parameters"
 FIFO="/tmp/fifo"
-# other variables are coming from the environment itself
 
-# main
 if ! [ -d /protonmail/gnupg ]; then
     gpg --generate-key --batch ${GPG_PARAMS}
 fi

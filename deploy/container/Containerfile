@@ -1,0 +1,19 @@
+FROM docker.io/debian:bullseye-slim
+
+ARG VERSION=2.3.0-1
+
+ENV USER=protonmail
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -q && apt-get install --no-install-recommends --no-install-suggests -y \
+    wget \
+    dbus-x11 \
+    socat \
+    && apt-get clean
+
+RUN wget https://github.com/ProtonMail/proton-bridge/releases/download/v2.3.0/protonmail-bridge_2.3.0-1_amd64.deb \
+    && apt-get -y install protonmail-bridge_2.3.0-1_amd64.deb
+
+RUN useradd -m -s /bin/bash ${USER}
+COPY entrypoint.sh gpg-key-parameters.txt /home/${USER}/
+RUN chown -R ${USER}: /home/${USER}

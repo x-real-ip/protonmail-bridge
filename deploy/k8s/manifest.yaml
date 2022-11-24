@@ -26,6 +26,23 @@ spec:
       provisioner_driver: node-manual
 
 ---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: protonmail-bridge-env
+  namespace: tools
+  labels:
+    app: protonmail-bridge
+data:
+  BRIDGE_EXTRA_ARGS: "--log-level info"
+  BRIDGE_SPLIT_ADDRESS_MODE: "false"
+  SMTP_PORT: "2025"
+  IMAP_PORT: "2143"
+  PROTONMAIL_LOGIN: ""
+  PROTONMAIL_PASSWORD: ""
+  PROTONMAIL_EXTRA_2FA: ""
+
+---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -62,12 +79,16 @@ spec:
     spec:
       containers:
         - name: protonmail-bridge-container
-          image: shenxn/protonmail-bridge:2.3.0-1
+          image: "harbor.k8s.lan/k8s/protonmail-bridge:1"
           resources: {}
+          envFrom:
+            - configMapRef:
+                name: protonmail-bridge-env
+                optional: false
           ports:
-            - containerPort: 25
+            - containerPort: 1025
           volumeMounts:
-            - mountPath: "/root/"
+            - mountPath: "/home/protonmail"
               name: protonmail-data
       volumes:
         - name: protonmail-data
@@ -89,4 +110,4 @@ spec:
   ports:
     - name: smtp
       port: 25
-      targetPort: 25
+      targetPort: 1025

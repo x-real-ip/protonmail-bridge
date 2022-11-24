@@ -2,7 +2,6 @@
 kind: pipeline
 type: docker
 name: build
-
 steps:
   - name: build and push image
     image: quay.io/buildah/stable

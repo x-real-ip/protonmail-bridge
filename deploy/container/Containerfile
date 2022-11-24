@@ -2,24 +2,24 @@ FROM docker.io/debian:bullseye-slim
 
 ARG PROTONMAIL_BRIDGE_VERSION=2.3.0
 
-# ENV USER=protonmail
-# ENV DEBIAN_FRONTEND=noninteractive
-# ENV PROTONMAIL_BRIDGE_FILE=protonmail-bridge_${PROTONMAIL_BRIDGE_VERSION}-1_amd64.deb
+ENV USER=protonmail
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PROTONMAIL_BRIDGE_FILE=protonmail-bridge_${PROTONMAIL_BRIDGE_VERSION}-1_amd64.deb
 
-# RUN apt-get update -q && apt-get install --no-install-recommends --no-install-suggests -y \
-#     wget \
-#     dbus-x11 \
-#     socat \
-#     ca-certificates \
-#     libcap2-bin 
+RUN apt-get update -q && apt-get install --no-install-recommends --no-install-suggests -y \
+    wget \
+    dbus-x11 \
+    socat \
+    ca-certificates \
+    libcap2-bin 
 
-# RUN wget https://github.com/ProtonMail/proton-bridge/releases/download/v${PROTONMAIL_BRIDGE_VERSION}/${PROTONMAIL_BRIDGE_FILE} \
-#     && apt-get install -y ./${PROTONMAIL_BRIDGE_FILE} \
-#     && rm ${PROTONMAIL_BRIDGE_FILE} \
-#     && apt-get clean
+RUN wget https://github.com/ProtonMail/proton-bridge/releases/download/v${PROTONMAIL_BRIDGE_VERSION}/${PROTONMAIL_BRIDGE_FILE} \
+    && apt-get install -y ./${PROTONMAIL_BRIDGE_FILE} \
+    && rm ${PROTONMAIL_BRIDGE_FILE} \
+    && apt-get clean
 
-# RUN setcap 'cap_net_bind_service=+ep' /usr/bin/socat
+RUN setcap 'cap_net_bind_service=+ep' /usr/bin/socat
 
-# RUN useradd -m -s /bin/bash ${USER}
-# COPY ./src /home/${USER}
-# RUN chown -R ${USER}: /home/${USER}
+RUN useradd -m -s /bin/bash ${USER}
+COPY ./src /home/${USER}
+RUN chown -R ${USER}: /home/${USER}

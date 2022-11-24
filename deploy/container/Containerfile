@@ -21,5 +21,5 @@ RUN wget https://github.com/ProtonMail/proton-bridge/releases/download/v${PROTON
 RUN setcap 'cap_net_bind_service=+ep' /usr/bin/socat
 
 RUN useradd -m -s /bin/bash ${USER}
-COPY ./src/ /home/${USER}/
+COPY ./src /home/${USER}
 RUN chown -R ${USER}: /home/${USER}

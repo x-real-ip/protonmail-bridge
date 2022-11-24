@@ -9,15 +9,15 @@ FIFO="/tmp/fifo"
 # other variables are coming from the environment itself
 
 # main
-if ! [ -d /home/gnupg ]; then
+if ! [ -d /protonmail/gnupg ]; then
     gpg --generate-key --batch ${GPG_PARAMS}
 fi
 
-if ! [ -d /home/.password-store ]; then
+if ! [ -d /protonmail/.password-store ]; then
     pass init "$(awk -F: '/^Name-Real/ {print $2}' ${GPG_PARAMS})"
 fi
 
-if ! [ -f /home/.cache/protonmail/bridge ]; then
+if ! [ -f /protonmail/.cache/protonmail/bridge ]; then
     echo -e "login\n${PROTONMAIL_LOGIN}\n${PROTONMAIL_PASSWORD}\n${PROTONMAIL_EXTRA_2FA}" | ${BRIDGE} ${BRIDGE_EXTRA_ARGS}
 fi
 

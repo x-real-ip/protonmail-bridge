@@ -2,7 +2,6 @@ FROM docker.io/debian:bullseye-slim
 
 ARG PROTONMAIL_BRIDGE_VERSION=2.3.0
 
-ENV USER=protonmail
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PROTONMAIL_BRIDGE_FILE=protonmail-bridge_${PROTONMAIL_BRIDGE_VERSION}-1_amd64.deb
 

@@ -2,12 +2,10 @@
 
 set -ex
 
-BRIDGE="protonmail-bridge --cli"
-BRIDGE_EXTRA_ARGS="--log-level info"
 GPG_PARAMS="/protonmail/gpg-key-parameters"
 FIFO="/tmp/fifo"
 
-if ! [ -d /protonmail/gnupg ]; then
+if ! [ -d /protonmail/.gnupg ]; then
     gpg --generate-key --batch ${GPG_PARAMS}
 fi
 
@@ -26,8 +24,8 @@ fi
 # socat will make the conn appear to come from 127.0.0.1
 # ProtonMail Bridge currently expects that.
 # It also allows us to bind to the real ports :)
-socat TCP-LISTEN:25,fork TCP:127.0.0.1:1025 &
-socat TCP-LISTEN:143,fork TCP:127.0.0.1:1143 &
+socat TCP-LISTEN:${SMTP_PORT},fork TCP:127.0.0.1:1025 &
+socat TCP-LISTEN:${IMAP_PORT},fork TCP:127.0.0.1:1143 &
 
 # display account information, then keep stdin open
 [ -e ${FIFO} ] || mkfifo ${FIFO}

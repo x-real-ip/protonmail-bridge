@@ -19,7 +19,3 @@ RUN wget https://github.com/ProtonMail/proton-bridge/releases/download/v${PROTON
     && apt-get clean
 
 RUN setcap 'cap_net_bind_service=+ep' /usr/bin/socat
-
-WORKDIR /protonmail
-
-COPY ./src .

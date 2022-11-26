@@ -1,29 +1,47 @@
----
-kind: PersistentVolume
+kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: pv-nfs-protonmail-bridge-data
-spec:
-  storageClassName: "freenas-nfs-manual-csi"
-  capacity:
-    storage: 100Mi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  mountOptions:
-    - nfsvers=4
-    - nolock
-    - noatime
-  csi:
-    driver: org.democratic-csi.node-manual
-    readOnly: false
-    fsType: nfs
-    volumeHandle: pv-nfs-protonmail-bridge-data
-    volumeAttributes:
-      server: storage-server-lagg.lan
-      share: /mnt/r01_1tb/k8s/protonmail-bridge-data
-      node_attach_driver: nfs
-      provisioner_driver: node-manual
+  name: protonmail-bridge-config
+  namespace: tools
+  labels:
+    app: protonmail-bridge
+data:
+  entrypoint.sh: |
+    #!/bin/bash
+    set -ex
+    GPG_PARAMS="/protonmail/gpg-key-parameters"
+    FIFO="/tmp/fifo"
+    if ! [ -d /protonmail/.gnupg ]; then
+        gpg --generate-key --batch ${GPG_PARAMS}
+    fi
+    if ! [ -d /protonmail/.password-store ]; then
+        pass init "$(awk -F: '/^Name-Real/ {print $2}' ${GPG_PARAMS})"
+    fi
+    if ! [ -f /protonmail/.cache/protonmail/bridge ]; then
+        echo -e "login\n${PROTONMAIL_LOGIN}\n${PROTONMAIL_PASSWORD}\n${PROTONMAIL_EXTRA_2FA}" | ${BRIDGE} ${BRIDGE_EXTRA_ARGS}
+    fi
+    if [ "${BRIDGE_SPLIT_ADDRESS_MODE}" = true ]; then
+        echo -e "change mode\nyes\n" | ${BRIDGE} ${BRIDGE_EXTRA_ARGS}
+    fi
+    # socat will make the conn appear to come from 127.0.0.1
+    # ProtonMail Bridge currently expects that.
+    # It also allows us to bind to the real ports :)
+    socat TCP-LISTEN:${SMTP_PORT},fork TCP:127.0.0.1:1025 &
+    socat TCP-LISTEN:${IMAP_PORT},fork TCP:127.0.0.1:1143 &
+    # display account information, then keep stdin open
+    [ -e ${FIFO} ] || mkfifo ${FIFO}
+    {
+        echo info
+        cat ${FIFO}
+    } | ${BRIDGE} ${BRIDGE_EXTRA_ARGS}
+  gpg-key-parameters: |
+    %no-protection
+    %echo Generating GPG key
+    Key-Type:RSA
+    Key-Length:4096
+    Name-Real:ProtonMail password-store
+    Expire-Date:0
+    %commit
 
 ---
 kind: ConfigMap
@@ -36,28 +54,8 @@ metadata:
 data:
   BRIDGE_EXTRA_ARGS: "--log-level info"
   BRIDGE_SPLIT_ADDRESS_MODE: "false"
-  SMTP_PORT: "2025"
-  IMAP_PORT: "2143"
-  PROTONMAIL_LOGIN: ""
-  PROTONMAIL_PASSWORD: ""
-  PROTONMAIL_EXTRA_2FA: ""
-
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: pvc-nfs-protonmail-bridge-data
-  namespace: tools
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "freenas-nfs-manual-csi"
-spec:
-  storageClassName: freenas-nfs-manual-csi
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 100Mi
-  volumeName: pv-nfs-protonmail-bridge-data
+  SMTP_PORT: "25"
+  IMAP_PORT: "143"
 
 ---
 kind: Deployment
@@ -78,22 +76,38 @@ spec:
         app: protonmail-bridge
     spec:
       containers:
-        - name: protonmail-bridge-container
-          image: "harbor.k8s.lan/k8s/protonmail-bridge:1"
+        - name: protonmail-bridge
+          image: "harbor.k8s.lan/k8s/protonmail-bridge:8"
+          imagePullPolicy: Always
           resources: {}
+          ports:
+            - containerPort: 25
+          command: ["/bin/bash"]
+          args: ["sleep 3600"]
+          # args: ["/protonmail/entrypoint.sh"]
           envFrom:
             - configMapRef:
                 name: protonmail-bridge-env
                 optional: false
-          ports:
-            - containerPort: 1025
           volumeMounts:
-            - mountPath: "/home/protonmail"
-              name: protonmail-data
+            - name: cache-volume
+              mountPath: /protonmail
+            - name: protonmail-bridge-config
+              mountPath: /protonmail/entrypoint.sh
+              subPath: /entrypoint.sh
+            - name: protonmail-bridge-config
+              mountPath: /protonmail/gpg-key-parameters
+              subPath: /gpg-key-parameters
       volumes:
-        - name: protonmail-data
-          persistentVolumeClaim:
-            claimName: pvc-nfs-protonmail-bridge-data
+        - name: protonmail
+          emptyDir:
+            sizeLimit: 200Mi
+        - name: protonmail-bridge-config
+          configMap:
+            name: protonmail-bridge-config
+            defaultMode: 0777
+      imagePullSecrets:
+        - name: harbor-registry-creds
 
 ---
 kind: Service
@@ -110,4 +124,4 @@ spec:
   ports:
     - name: smtp
       port: 25
-      targetPort: 1025
+      targetPort: 25

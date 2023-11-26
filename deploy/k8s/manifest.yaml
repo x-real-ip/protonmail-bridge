@@ -20,7 +20,7 @@ spec:
     fsType: nfs
     volumeHandle: pv-nfs-protonmail-bridge-data
     volumeAttributes:
-      server: storage-server-lagg.lan
+      server: storage-server-lagg.lan.theautomation.nl
       share: /mnt/r01_1tb/k8s/protonmail-bridge-data
       node_attach_driver: nfs
       provisioner_driver: node-manual
@@ -184,7 +184,7 @@ spec:
     spec:
       initContainers:
         - name: bitwarden-cli-init
-          image: "harbor.k8s.lan/k8s/bitwarden-cli-init:latest"
+          image: "harbor.lan.theautomation.nl/k8s/bitwarden-cli-init:latest"
           imagePullPolicy: Always
           resources: {}
           command: ["/bin/bash", "/home/bitwarden-cli-commands.sh"]
@@ -203,7 +203,7 @@ spec:
               subPath: bitwarden-cli-commands.sh
       containers:
         - name: protonmail-bridge
-          image: "harbor.k8s.lan/k8s/protonmail-bridge:latest"
+          image: "harbor.lan.theautomation.nl/k8s/protonmail-bridge:latest"
           imagePullPolicy: Always
           resources: {}
           ports:

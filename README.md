@@ -20,7 +20,7 @@ args: ["-c", "while true; do sleep 3600; done"]
 Get inside the container and run the following command for initialization
 
 ```bash
-bash ./protonmail/entrypoint.sh init
+bash /protonmail/entrypoint.sh init
 ```
 
 Run `login` and enter the credentials

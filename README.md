@@ -1,12 +1,12 @@
 # protonmail-bridge
 
-[![Build Status](https://drone.x-real-ip.nl/api/badges/x-real-ip/protonmail-bridge/status.svg)](https://drone.x-real-ip.nl/x-real-ip/protonmail-bridge)
+[![Continuous integration](https://github.com/x-real-ip/protonmail-bridge/actions/workflows/ci.yaml/badge.svg)](https://github.com/x-real-ip/protonmail-bridge/actions/workflows/ci.yaml)
 ![GitHub repo size](https://img.shields.io/github/repo-size/x-real-ip/protonmail-bridge?logo=Github)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/x-real-ip/protonmail-bridge?logo=github)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/x-real-ip/protonmail-bridge/main?logo=github)
 
-<img src="https://github.com/x-real-ip/kubernetes-gitops/blob/main/assets/img/k8s.png?raw=true" alt="K8s" style="height: 30px; width:30px;"/>
-Application running in Kubernetes
+<img src="https://github.com/x-real-ip/infrastructure/blob/main/assets/img/k8s.png?raw=true" alt="K8s" style="height: 30px; width:30px;"/>
+Application running in Kubernetes.
 
 ## Init
 

@@ -1,4 +1,4 @@
-FROM docker.io/shenxn/protonmail-bridge:latest
+FROM docker.io/shenxn/protonmail-bridge:3.19.0-1
 
 # Bridge's internal self-updater silently downloads newer releases at
 # runtime (independent of this image's tag) and refuses to fall back to
